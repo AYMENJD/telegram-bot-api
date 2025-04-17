@@ -1,5 +1,5 @@
 //
-// Copyright Aliaksei Levin (levlam@telegram.org), Arseny Smirnov (arseny30@gmail.com) 2014-2023
+// Copyright Aliaksei Levin (levlam@telegram.org), Arseny Smirnov (arseny30@gmail.com) 2014-2024
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -147,7 +147,7 @@ class BotStatActor final : public td::Actor {
   }
 
   BotStatActor(const BotStatActor &) = delete;
-  BotStatActor &operator=(const BotStatActor &other) = delete;
+  BotStatActor &operator=(const BotStatActor &) = delete;
   BotStatActor(BotStatActor &&) = default;
   BotStatActor &operator=(BotStatActor &&other) noexcept {
     if (!empty()) {

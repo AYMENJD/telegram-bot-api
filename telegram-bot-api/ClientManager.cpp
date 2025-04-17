@@ -1,5 +1,5 @@
 //
-// Copyright Aliaksei Levin (levlam@telegram.org), Arseny Smirnov (arseny30@gmail.com) 2014-2023
+// Copyright Aliaksei Levin (levlam@telegram.org), Arseny Smirnov (arseny30@gmail.com) 2014-2024
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -90,6 +90,11 @@ void ClientManager::send(PromisedQueryPtr query) {
 
   auto id_it = token_to_id_.find(token);
   if (id_it == token_to_id_.end()) {
+    auto method = query->method();
+    if (method == "close") {
+      return fail_query(400, "Bad Request: the bot has already been closed", std::move(query));
+    }
+
     td::string ip_address = query->get_peer_ip_address();
     if (!ip_address.empty()) {
       td::IPAddress tmp;
@@ -128,7 +133,6 @@ void ClientManager::send(PromisedQueryPtr query) {
                                                     query->token().str(), query->is_test_dc(), tqueue_id, parameters_,
                                                     client_info->stat_.actor_id(&client_info->stat_));
 
-    auto method = query->method();
     if (method != "deletewebhook" && method != "setwebhook") {
       auto bot_token_with_dc = PSTRING() << query->token() << (query->is_test_dc() ? ":T" : "");
       auto webhook_info = parameters_->shared_data_->webhook_db_->get(bot_token_with_dc);
@@ -350,7 +354,7 @@ void ClientManager::start_up() {
   parameters_->shared_data_->webhook_db_ = std::move(concurrent_webhook_db);
 
   auto &webhook_db = *parameters_->shared_data_->webhook_db_;
-  for (auto key_value : webhook_db.get_all()) {
+  for (const auto &key_value : webhook_db.get_all()) {
     if (!token_range_(td::to_integer<td::uint64>(key_value.first))) {
       LOG(WARNING) << "DROP WEBHOOK: " << key_value.first << " ---> " << key_value.second;
       webhook_db.erase(key_value.first);
